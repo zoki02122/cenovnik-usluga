@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#131412">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cenovnik">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Cenovnik usluga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #131412;
+    --bg-elev: #1c1d1a;
+    --bg-elev-2: #24251f;
+    --border: #34352e;
+    --text: #eeece3;
+    --text-dim: #9d9a8d;
+    --text-faint: #6f6c60;
+    --accent-hi: #e0b448;
+    --accent: #c99a34;
+    --accent-lo: #a67c22;
+    --accent-text: #221a08;
+    --pill-active-bg: linear-gradient(135deg, #5f451a, #40300f);
+    --danger: #b8493a;
+    --danger-hi: #cf5a49;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;height:100%;overscroll-behavior-y: none;}
+  body{display:flex; flex-direction:column; min-height:100vh;}
+  h1,h2,h3,.num{font-family:'Barlow Condensed',sans-serif;}
+  button{font-family:inherit; -webkit-appearance:none; appearance:none; border:none; background:none; color:inherit; cursor:pointer;}
+  input,textarea{font-family:inherit;}
+
+  /* ---------- Sticky top (header + tabs) ---------- */
+  .sticky-top{
+    position:sticky; top:0; z-index:20;
+    background:var(--bg);
+    border-bottom:1px solid var(--border);
+  }
+  header{
+    padding:14px 16px 12px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .h-title{display:flex; flex-direction:column; line-height:1.05;}
+  .h-title .t1{font-size:22px; font-weight:700; letter-spacing:0.2px; font-family:'Barlow Condensed',sans-serif;}
+  .h-title .t2{font-size:12px; color:var(--text-faint); margin-top:2px;}
+  .gear-btn{
+    width:40px; height:40px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--bg-elev-2); border:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .gear-btn svg{width:20px;height:20px;stroke:var(--text-dim);}
+
+  .tabs-row{
+    display:flex; gap:8px; padding:0 16px 14px;
+    overflow-x:auto;
+  }
+  .tab-pill{
+    display:flex; align-items:center; gap:7px;
+    padding:9px 15px;
+    border-radius:22px;
+    background:var(--bg-elev-2);
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    font-size:14.5px; font-weight:600;
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+  .tab-pill svg{width:16px;height:16px; stroke:var(--text-dim); flex-shrink:0;}
+  .tab-pill.active{
+    background:var(--pill-active-bg);
+    border-color:#5c441c;
+    color:var(--accent-hi);
+  }
+  .tab-pill.active svg{stroke:var(--accent-hi);}
+
+  .backup-banner{
+    background:linear-gradient(135deg, #3a2f14, #2c2410);
+    border-top:1px solid #4a3c18;
+    color:var(--accent-hi);
+    font-size:13px;
+    padding:9px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .backup-banner button{
+    flex-shrink:0;
+    background:var(--accent); color:var(--accent-text);
+    font-weight:700; font-size:12.5px;
+    padding:6px 12px; border-radius:8px;
+  }
+
+  main{flex:1; padding:16px 16px 100px; max-width:520px; margin:0 auto; width:100%;}
+
+  .cat-sub-heading{font-size:13px; color:var(--text-faint); margin-bottom:14px;}
+
+  /* ---------- Price cards ---------- */
+  .price-card{
+    background:var(--bg-elev);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 14px 11px;
+    margin-bottom:8px;
+    user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+    touch-action:manipulation;
+  }
+  .price-card:active{transform:scale(0.99);}
+  .pin-badge{width:14px;height:14px; color:var(--accent-hi); flex-shrink:0;}
+  .pc-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .pc-left{display:flex; align-items:center; gap:7px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
+  .pc-size{font-size:21px; font-weight:700; font-family:'Barlow Condensed',sans-serif; flex-shrink:0;}
+  .pc-price{font-size:30px; font-weight:800; color:var(--accent-hi); font-family:'Barlow Condensed',sans-serif; flex-shrink:0; white-space:nowrap;}
+  .pc-price.empty{font-size:14px; font-weight:600; color:var(--text-faint); font-family:'Barlow',sans-serif;}
+  .pc-price .din{font-size:15px; font-weight:600; color:var(--text-dim); margin-left:3px;}
+  .pc-tag{
+    font-size:11px; font-weight:600;
+    padding:4px 10px 4px 8px; border-radius:14px;
+    background:var(--bg-elev-2); border:1px solid var(--border);
+    color:var(--text-dim);
+    white-space:nowrap;
+    display:inline-flex; align-items:center; gap:5px;
+    flex-shrink:0;
+  }
+  .pc-tag svg{width:17px;height:17px; flex-shrink:0; stroke:currentColor;}
+  .pc-note{margin-top:6px; font-size:12.5px; color:var(--text-faint); font-style:italic; line-height:1.3;}
+
+  .empty-state{
+    text-align:center; padding:50px 20px; color:var(--text-faint); font-size:14px;
+  }
+
+  /* ---------- Floating add button ---------- */
+  .fab{
+    position:fixed; bottom:26px; right:20px; z-index:15;
+    width:56px; height:56px; border-radius:50%;
+    background:linear-gradient(135deg, var(--accent-hi), var(--accent-lo));
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.35), inset 0 -8px 14px rgba(0,0,0,0.25), 0 4px 14px rgba(0,0,0,0.4);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .fab svg{width:26px;height:26px; stroke:var(--accent-text); stroke-width:2.4;}
+
+  /* ---------- Modal sheet (shared) ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,10,8,0.72);
+    z-index:100; display:none; align-items:flex-end;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-sheet{
+    width:100%; max-height:88vh; overflow-y:auto;
+    background:var(--bg-elev); border-radius:20px 20px 0 0;
+    border-top:1px solid var(--border);
+    padding:18px 16px calc(24px + env(safe-area-inset-bottom));
+    animation: sheetUp 0.22s ease-out;
+    position:relative;
+  }
+  @keyframes sheetUp{from{transform:translateY(24px); opacity:0.4;} to{transform:translateY(0); opacity:1;}}
+  .modal-handle{width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 14px;}
+  .modal-title{font-size:19px; font-weight:700; margin-bottom:4px; padding-right:36px;}
+  .modal-sub{font-size:13px; color:var(--text-faint); margin-bottom:18px;}
+  .modal-close{
+    position:absolute; top:16px; right:16px;
+    width:32px; height:32px; border-radius:9px;
+    background:var(--bg-elev-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .modal-close svg{width:16px;height:16px; stroke:var(--text-dim);}
+
+  .field-block{margin-bottom:14px;}
+  .field-label{font-size:12.5px; color:var(--text-faint); margin-bottom:6px; display:block;}
+  .field-input{
+    width:100%; background:var(--bg-elev-2); border:1px solid var(--border);
+    border-radius:10px; padding:12px 12px; color:var(--text); font-size:16px;
+  }
+  .field-input:focus{outline:none; border-color:var(--accent-lo);}
+  textarea.field-input{resize:vertical; min-height:60px; font-size:14.5px;}
+
+  .sheet-actions{display:flex; gap:10px; margin-top:18px;}
+  .btn-cancel{
+    flex:1; background:var(--bg-elev-2); border:1px solid var(--border);
+    color:var(--text-dim); font-weight:700; font-size:15px;
+    padding:13px; border-radius:12px; text-align:center;
+  }
+  .btn-save{
+    flex:1;
+    background:linear-gradient(135deg, var(--accent-hi), var(--accent-lo));
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.35), inset 0 -8px 14px rgba(0,0,0,0.2);
+    color:var(--accent-text); font-weight:700; font-size:15px;
+    padding:13px; border-radius:12px; text-align:center;
+  }
+  .btn-delete{
+    width:100%; margin-top:10px;
+    background:rgba(184,73,58,0.12); border:1px solid rgba(184,73,58,0.35);
+    color:var(--danger-hi); font-weight:700; font-size:14.5px;
+    padding:13px; border-radius:12px; text-align:center;
+  }
+
+  /* ---------- Settings modal ---------- */
+  .settings-section{margin-bottom:22px;}
+  .settings-section-title{
+    font-size:13px; font-weight:700; color:var(--text-dim);
+    text-transform:uppercase; letter-spacing:0.4px; margin-bottom:10px;
+    padding-bottom:6px; border-bottom:1px solid var(--border);
+  }
+  .cat-edit-block{margin-bottom:18px;}
+  .cat-edit-name{font-size:15px; font-weight:600; margin-bottom:8px;}
+  .price-row{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 0; border-bottom:1px solid var(--border);
+  }
+  .price-row:last-child{border-bottom:none;}
+  .price-row .pr-size{width:52px; flex-shrink:0; font-size:14px; font-weight:600; color:var(--text-dim);}
+  .price-row .pr-inputs{flex:1; display:flex; gap:6px; flex-wrap:wrap;}
+  .pr-field{flex:1; min-width:70px; position:relative;}
+  .pr-field label{position:absolute; top:-7px; left:9px; font-size:9px; background:var(--bg-elev); padding:0 4px; color:var(--text-faint);}
+  .pr-field input{
+    width:100%; background:var(--bg-elev-2); border:1px solid var(--border);
+    border-radius:8px; padding:9px 8px; color:var(--text); font-size:13.5px;
+    font-weight:600;
+  }
+  .pr-field input:focus{outline:none; border-color:var(--accent-lo);}
+  .pr-field.market input, .pr-field.complete input{color:var(--text-dim); font-weight:500;}
+  .remove-size-btn{
+    width:28px; height:28px; border-radius:7px; flex-shrink:0;
+    background:var(--bg-elev-2); border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .remove-size-btn svg{width:13px;height:13px; stroke:var(--danger-hi);}
+
+  .backup-row{display:flex; gap:10px;}
+  .backup-btn{
+    flex:1; background:var(--bg-elev-2); border:1px solid var(--border);
+    color:var(--text); font-size:13.5px; font-weight:600;
+    padding:12px 8px; border-radius:10px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .backup-btn svg{width:18px;height:18px; stroke:var(--accent-hi);}
+  .reminder-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:14px; font-size:14px; color:var(--text-dim);
+  }
+  .reminder-row input{
+    width:50px; text-align:center; background:var(--bg-elev-2);
+    border:1px solid var(--border); border-radius:8px; padding:7px; color:var(--text);
+  }
+  .last-backup-note{font-size:11.5px; color:var(--text-faint); margin-top:8px;}
+  .save-settings-btn{
+    width:100%; margin-top:6px;
+    background:linear-gradient(135deg, var(--accent-hi), var(--accent-lo));
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.35), inset 0 -8px 14px rgba(0,0,0,0.2);
+    color:var(--accent-text); font-weight:700; font-size:15.5px;
+    padding:14px; border-radius:12px; text-align:center;
+  }
+
+  /* ---------- Confirm dialog ---------- */
+  .confirm-overlay{
+    position:fixed; inset:0; background:rgba(10,10,8,0.72);
+    z-index:200; display:none; align-items:center; justify-content:center; padding:30px;
+  }
+  .confirm-overlay.open{display:flex;}
+  .confirm-box{
+    background:var(--bg-elev); border:1px solid var(--border);
+    border-radius:16px; padding:22px 18px 18px; width:100%; max-width:340px;
+    text-align:center;
+  }
+  .confirm-box .ct{font-size:17px; font-weight:700; margin-bottom:8px;}
+  .confirm-box .cm{font-size:14px; color:var(--text-dim); margin-bottom:20px; line-height:1.4;}
+  .confirm-actions{display:flex; gap:10px;}
+  .confirm-actions button{flex:1; padding:12px; border-radius:10px; font-weight:700; font-size:14.5px;}
+  .confirm-cancel{background:var(--bg-elev-2); border:1px solid var(--border); color:var(--text-dim);}
+  .confirm-ok{background:linear-gradient(135deg, var(--danger-hi), var(--danger)); color:#2a1310;}
+  .confirm-ok.pos{background:linear-gradient(135deg, var(--accent-hi), var(--accent-lo)); color:var(--accent-text);}
+
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
+    background:var(--bg-elev-2); border:1px solid var(--border);
+    color:var(--text); font-size:13.5px; font-weight:600;
+    padding:11px 20px; border-radius:24px; z-index:300;
+    opacity:0; pointer-events:none; transition:opacity 0.25s;
+  }
+  .toast.show{opacity:1;}
+
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+
+<div class="sticky-top">
+  <header>
+    <div class="h-title">
+      <div class="t1">Cenovnik usluga</div>
+      <div class="t2" id="headerSub">od 01-11-2025</div>
+    </div>
+    <div style="display:flex; gap:8px; flex-shrink:0;">
+    <button class="gear-btn" id="openQr">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="3" height="3"></rect><rect x="18" y="14" width="3" height="3"></rect><rect x="14" y="18" width="3" height="3"></rect><rect x="18" y="18" width="3" height="3"></rect></svg>
+    </button>
+    <button class="gear-btn" id="openSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </button>
+    </div>
+  </header>
+  <div class="tabs-row" id="tabsRow"></div>
+  <div class="backup-banner" id="backupBanner" style="display:none;">
+    <span id="backupBannerText">Nisi napravio bekap odavno.</span>
+    <button id="backupBannerBtn">Izvezi sad</button>
+  </div>
+</div>
+
+<main>
+  <div id="cardList"></div>
+</main>
+
+<button class="fab" id="fabAdd" style="display:none;">
+  <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+</button>
+
+<!-- ITEM EDIT SHEET -->
+<div class="modal-overlay" id="itemEditOverlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="modal-close" id="closeItemEdit">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+    </button>
+    <div class="modal-title" id="itemEditTitle">Naslov</div>
+    <div class="modal-sub" id="itemEditSub">Izmeni cenu za ovu dimenziju</div>
+
+    <div class="field-block">
+      <label class="field-label">Cena za ukupnu montažu (din)</label>
+      <input class="field-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="itemOwnPrice" placeholder="npr. 4.600">
+    </div>
+    <div class="field-block" id="itemMarketBlock">
+      <label class="field-label">Tržišna cena (din) — orijentir, opciono</label>
+      <input class="field-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="itemMarketPrice" placeholder="npr. 3.400">
+    </div>
+    <div class="field-block" id="itemCompleteBlock">
+      <label class="field-label">Cena montaže jedne gume (din) — opciono</label>
+      <input class="field-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="itemCompletePrice" placeholder="npr. 1.200">
+    </div>
+    <div class="field-block">
+      <label class="field-label">Napomena — opciono</label>
+      <textarea class="field-input" id="itemNote" placeholder="npr. runflat +500 din"></textarea>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="itemCancelBtn">Otkaži</button>
+      <button class="btn-save" id="itemSaveBtn">Sačuvaj</button>
+    </div>
+    <button class="btn-delete" id="itemDeleteBtn" style="display:none;">Obriši veličinu</button>
+  </div>
+</div>
+
+<!-- ADD SIZE SHEET -->
+<div class="modal-overlay" id="addSizeOverlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="modal-close" id="closeAddSize">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+    </button>
+    <div class="modal-title" id="addSizeTitle">Nova veličina</div>
+    <div class="modal-sub">Dodaj novu dimenziju u ovu kategoriju</div>
+
+    <div class="field-block">
+      <label class="field-label">Veličina (npr. 17")</label>
+      <input class="field-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="newSizeLabel" placeholder="17&quot;">
+    </div>
+    <div class="field-block">
+      <label class="field-label">Cena za ukupnu montažu (din)</label>
+      <input class="field-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="newSizePrice" placeholder="npr. 6.000">
+    </div>
+    <div class="field-block">
+      <label class="field-label">Napomena — opciono</label>
+      <textarea class="field-input" id="newSizeNote" placeholder="opciono"></textarea>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="addSizeCancelBtn">Otkaži</button>
+      <button class="btn-save" id="addSizeSaveBtn">Sačuvaj</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL (bulk edit) -->
+<div class="modal-overlay" id="settingsOverlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <button class="modal-close" id="closeSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+    </button>
+    <div class="modal-title">Podešavanja</div>
+    <div class="modal-sub">Cene i bekap, razdvojeno</div>
+
+    <div style="display:flex; gap:8px; margin-bottom:18px;">
+      <button class="tab-pill active" id="settingsTabPrices">Cene</button>
+      <button class="tab-pill" id="settingsTabBackup">Bekap</button>
+    </div>
+
+    <div id="settingsPricesSection">
+      <div class="settings-section">
+        <div class="settings-section-title">Cene po kategoriji</div>
+        <div id="priceEditArea"></div>
+      </div>
+    </div>
+
+    <div id="settingsBackupSection" style="display:none;">
+      <div class="settings-section">
+        <div class="settings-section-title">Bekap podataka</div>
+        <div class="backup-row">
+          <button class="backup-btn" id="exportBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Izvezi (JSON)
+          </button>
+          <button class="backup-btn" id="importBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            Uvezi (JSON)
+          </button>
+        </div>
+        <input type="file" id="importFile" accept="application/json">
+        <div class="last-backup-note" id="lastBackupNote"></div>
+        <div class="reminder-row">
+          <span>Podseti me na svakih (dana)</span>
+          <input type="number" id="reminderDaysInput" min="1" max="90">
+        </div>
+      </div>
+    </div>
+
+    <button class="save-settings-btn" id="saveSettingsBtn">Sačuvaj izmene</button>
+  </div>
+</div>
+
+<!-- QR CODE VIEWER -->
+<div class="modal-overlay" id="qrViewOverlay" style="align-items:center; justify-content:center; padding:24px;">
+  <div style="width:100%; max-width:360px;">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+      <button class="modal-close" id="closeQrView" style="position:static;">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div style="background:#fff; border-radius:16px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:12px;">
+      <img id="qrViewImg" alt="QR kod za plaćanje" style="max-width:100%; max-height:56vh; display:block; border-radius:6px;">
+      <div style="color:#1a1a1a; font-weight:700; font-size:14px; font-family:'Barlow',sans-serif;">Skeniraj za plaćanje (IPS)</div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:14px;">
+      <button class="btn-cancel" id="qrChangeBtn" style="flex:1;">Promeni sliku</button>
+      <button class="btn-delete" id="qrRemoveBtn" style="flex:1; margin-top:0;">Ukloni</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="qrFileInput" accept="image/*">
+
+<!-- CARD QUICK MENU (long-press) -->
+<div class="modal-overlay" id="cardMenuOverlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="cardMenuTitle">Veličina</div>
+    <div class="modal-sub">Šta želiš da uradiš sa ovom dimenzijom?</div>
+    <button class="btn-cancel" id="cardMenuPinBtn" style="width:100%; margin-bottom:10px;">Zakači na vrh</button>
+    <button class="btn-delete" id="cardMenuDeleteBtn" style="width:100%; margin-top:0;">Obriši veličinu</button>
+    <button class="btn-cancel" id="cardMenuCancelBtn" style="width:100%; margin-top:10px;">Otkaži</button>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="ct" id="confirmTitle">Da li si siguran?</div>
+    <div class="cm" id="confirmMsg"></div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" id="confirmCancel">Otkaži</button>
+      <button class="confirm-ok" id="confirmOk">Potvrdi</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "cenovnik_usluga_v1";
+
+  var ICONS = {
+    putnicka: '<path d="M5 17h14M5 17a2 2 0 1 0 4 0M5 17a2 2 0 1 1 4 0M15 17a2 2 0 1 0 4 0M15 17a2 2 0 1 1 4 0M3 17V11l2-5h10l3 5v6"></path><path d="M3 11h16"></path>',
+    dzip: '<path d="M4 17h1M19 17h1M6 17a2 2 0 1 0 4 0M6 17a2 2 0 1 1 4 0M14 17a2 2 0 1 0 4 0M14 17a2 2 0 1 1 4 0M3 17V9l2-3h12l3 4v7"></path><path d="M3 9h17"></path>',
+    kombi: '<rect x="2.5" y="8" width="15" height="9" rx="1.2"></rect><path d="M17.5 11h2.3l1.7 3v3h-4z"></path><path d="M6 17a1.6 1.6 0 1 0 3.2 0M6 17a1.6 1.6 0 1 1 3.2 0M15.4 17a1.6 1.6 0 1 0 3.2 0M15.4 17a1.6 1.6 0 1 1 3.2 0"></path>',
+    market: '<path d="M12 2l7.5 4.5v9L12 20l-7.5-4.5v-9z"></path><circle cx="12" cy="10.5" r="1.4"></circle>',
+    tire: '<circle cx="8" cy="8" r="6.2"></circle><circle cx="8" cy="8" r="2.1"></circle>'
+  };
+
+  var DEFAULT_DATA = {
+    categories: {
+      putnicka: {
+        label: "Putnička vozila",
+        sizes: ["10-13\"","14-15\"","16\"","17\"","18\"","19\"","20\">"],
+        allowAddSize: true,
+        hasMarket: true,
+        hasComplete: true,
+        prices: {
+          "10-13\"": {own:3000, market:3700},
+          "14-15\"": {own:3200, market:4000},
+          "16\"":    {own:3400, market:4600},
+          "17\"":    {own:3800, market:5100},
+          "18\"":    {own:4800, market:6900},
+          "19\"":    {own:5400, market:6900},
+          "20\">":   {own:8000, market:8700}
+        }
+      },
+      dzip: {
+        label: "Džip 4x4 vozila",
+        sizes: ["15\"","16\"","17\"","18\"","19\"","20\"","21\""],
+        allowAddSize: true,
+        hasMarket: true,
+        hasComplete: true,
+        prices: {
+          "15\"":{own:5200}, "16\"":{own:5600}, "17\"":{own:6000},
+          "18\"":{own:7200}, "19\"":{own:8000}, "20\"":{own:8800}, "21\"":{own:9600}
+        }
+      },
+      kombi: {
+        label: "Kombi i poluteretna",
+        sizes: ["14-15\"","16\">"],
+        allowAddSize: true,
+        hasMarket: true,
+        hasComplete: true,
+        prices: {
+          "14-15\"": {own:5500},
+          "16\">":   {own:6600}
+        }
+      }
+    },
+    lastBackup: null,
+    reminderDays: 7
+  };
+
+  var CAT_ORDER = ["putnicka","dzip","kombi"];
+
+  function loadData(){
+    var data;
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      data = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }catch(e){
+      data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+    if(!data.categories) data.categories = {};
+    // fill missing categories from default
+    CAT_ORDER.forEach(function(k){
+      if(!data.categories[k]) data.categories[k] = JSON.parse(JSON.stringify(DEFAULT_DATA.categories[k]));
+      // hasMarket/hasComplete are app capability flags, not user data — always follow the current default
+      data.categories[k].hasMarket = DEFAULT_DATA.categories[k].hasMarket;
+      data.categories[k].hasComplete = DEFAULT_DATA.categories[k].hasComplete;
+      data.categories[k].allowAddSize = DEFAULT_DATA.categories[k].allowAddSize;
+      if(!data.categories[k].prices) data.categories[k].prices = {};
+    });
+    // migrate old Džip sizes stored without the inch mark (e.g. "15") to the "15\"" format,
+    // carrying over any prices already saved under the old bare-number keys
+    var dz = data.categories.dzip;
+    if(dz && dz.sizes && dz.sizes.length && dz.sizes[0].indexOf("\"") === -1){
+      var migratedSizes = [];
+      var migratedPrices = {};
+      dz.sizes.forEach(function(oldSz){
+        var newSz = oldSz + "\"";
+        migratedSizes.push(newSz);
+        migratedPrices[newSz] = dz.prices[oldSz] || {};
+      });
+      dz.sizes = migratedSizes;
+      dz.prices = migratedPrices;
+    }
+    // one-time fix: the very first version had own/market reversed for Putnička vozila.
+    // If a size still holds exactly that old swapped pair, put them back the right way round —
+    // only touches those specific known-wrong values, never anything since edited by hand.
+    var OLD_SWAPPED_PUTNICKA = {
+      "10-13\"": {own:3700, market:3000},
+      "14-15\"": {own:4000, market:3200},
+      "16\"":    {own:4600, market:3400},
+      "17\"":    {own:5100, market:3800},
+      "18\"":    {own:6900, market:4800},
+      "19\"":    {own:6900, market:5400},
+      "20\">":   {own:8700, market:8000}
+    };
+    var put = data.categories.putnicka;
+    if(put && put.prices){
+      Object.keys(OLD_SWAPPED_PUTNICKA).forEach(function(sz){
+        var p = put.prices[sz];
+        var old = OLD_SWAPPED_PUTNICKA[sz];
+        if(p && p.own === old.own && p.market === old.market){
+          p.own = old.market;
+          p.market = old.own;
+        }
+      });
+    }
+    // migrate old standalone "kompletna" category (v1) into putnicka.complete
+    if(data.categories.kompletna){
+      var oldK = data.categories.kompletna;
+      var put = data.categories.putnicka;
+      Object.keys(oldK.prices || {}).forEach(function(sz){
+        var val = oldK.prices[sz];
+        if(val && typeof val.own === "number"){
+          if(!put.prices[sz]) put.prices[sz] = {};
+          if(typeof put.prices[sz].complete !== "number") put.prices[sz].complete = val.own;
+        }
+      });
+      delete data.categories.kompletna;
+    }
+    if(typeof data.reminderDays !== "number") data.reminderDays = 7;
+    if(typeof data.lastBackup === "undefined") data.lastBackup = null;
+    return data;
+  }
+
+  function saveData(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  var DATA = loadData();
+  var state = { activeCat: "putnicka" };
+
+  // ---------- Toast ----------
+  var toastEl = document.getElementById("toast");
+  var toastTimer;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+  }
+
+  // ---------- Back-button handling for overlays (same pattern proven in Kućna apoteka) ----------
+  // Every overlay we open pushes one history entry. A real back-button press pops it and
+  // just hides the top overlay instead of leaving the app. Closing via an in-app button (X,
+  // Cancel, Save...) goes through closeTopOverlay(), which calls history.back() itself and
+  // suppresses the resulting popstate so it isn't handled twice.
+  var overlayStack = [];
+  var suppressPopstate = 0;
+
+  function pushOverlayState(hideFn){
+    overlayStack.push(hideFn);
+    history.pushState({ cenovnikOverlay: overlayStack.length }, "");
+  }
+
+  function closeTopOverlay(){
+    if(overlayStack.length === 0) return;
+    var hideFn = overlayStack.pop();
+    suppressPopstate++;
+    history.back();
+    hideFn();
+  }
+
+  window.addEventListener("popstate", function(){
+    if(suppressPopstate > 0){
+      suppressPopstate--;
+      return;
+    }
+    if(overlayStack.length > 0){
+      var hideFn = overlayStack.pop();
+      hideFn();
+    }
+  });
+
+  // ---------- Confirm dialog ----------
+  var confirmOverlay = document.getElementById("confirmOverlay");
+  var confirmTitle = document.getElementById("confirmTitle");
+  var confirmMsg = document.getElementById("confirmMsg");
+  var confirmOkBtn = document.getElementById("confirmOk");
+  var confirmCancelBtn = document.getElementById("confirmCancel");
+  var confirmResolve = null;
+
+  function askConfirm(title, msg, okLabel, positive){
+    confirmTitle.textContent = title;
+    confirmMsg.textContent = msg;
+    confirmOkBtn.textContent = okLabel || "Potvrdi";
+    confirmOkBtn.className = "confirm-ok" + (positive ? " pos" : "");
+    confirmOverlay.classList.add("open");
+    pushOverlayState(function(){
+      confirmOverlay.classList.remove("open");
+      if(confirmResolve){ confirmResolve(false); confirmResolve = null; }
+    });
+    return new Promise(function(res){ confirmResolve = res; });
+  }
+  confirmOkBtn.addEventListener("click", function(){
+    if(confirmResolve){ confirmResolve(true); confirmResolve = null; }
+    closeTopOverlay();
+  });
+  confirmCancelBtn.addEventListener("click", function(){
+    if(confirmResolve){ confirmResolve(false); confirmResolve = null; }
+    closeTopOverlay();
+  });
+
+  function fmt(n){
+    if(n === null || n === undefined || isNaN(n)) return "—";
+    var rounded = Math.round(Number(n));
+    var neg = rounded < 0;
+    var intPart = String(Math.abs(rounded));
+    var withDots = "";
+    while(intPart.length > 3){
+      withDots = "." + intPart.slice(-3) + withDots;
+      intPart = intPart.slice(0, -3);
+    }
+    withDots = intPart + withDots;
+    return (neg ? "-" : "") + withDots;
+  }
+
+  function sizeSortKey(sz){
+    var m = String(sz).match(/\d+/);
+    return m ? parseInt(m[0], 10) : 0;
+  }
+
+  function getSortedSizes(cat){
+    var pinned = [];
+    var rest = [];
+    cat.sizes.forEach(function(sz){
+      var p = cat.prices[sz] || {};
+      if(p.pinned) pinned.push(sz); else rest.push(sz);
+    });
+    pinned.sort(function(a,b){ return sizeSortKey(a) - sizeSortKey(b); });
+    rest.sort(function(a,b){ return sizeSortKey(a) - sizeSortKey(b); });
+    return pinned.concat(rest);
+  }
+
+  // ---------- Reliable field navigation (proven fix from Stanje guma — Android Chrome/Gboard) ----------
+  var fieldOriginal = new WeakMap();
+  var pristineArmed = new WeakSet();
+
+  function snapshotField(el){
+    fieldOriginal.set(el, el.value);
+  }
+
+  function handleFocusSelect(el){
+    if(el.type === "date"){ pristineArmed.delete(el); return; }
+    el.select();
+    pristineArmed.add(el);
+  }
+
+  function getFocusableChain(container){
+    return Array.prototype.slice.call(container.querySelectorAll("input, textarea")).filter(function(el){
+      var block = el.closest(".field-block") || el.closest(".pr-field") || el;
+      return block.offsetParent !== null;
+    });
+  }
+
+  function wireBackspace(el){
+    if(el.__backspaceWired) return;
+    el.__backspaceWired = true;
+    var goPrev = function(){ if(el.__prevField) el.__prevField.focus(); };
+    el.addEventListener("focus", function(){ handleFocusSelect(el); });
+    el.addEventListener("keydown", function(e){
+      if(e.key !== "Backspace") return;
+      if(el.value === "" || pristineArmed.has(el)){
+        e.preventDefault();
+        goPrev();
+      }
+    });
+    el.addEventListener("beforeinput", function(e){
+      if(e.inputType !== "deleteContentBackward") return;
+      if(el.value === "" || pristineArmed.has(el)){
+        e.preventDefault();
+        goPrev();
+      }
+    });
+    el.addEventListener("input", function(){
+      var original = fieldOriginal.get(el);
+      if(typeof original !== "string") original = "";
+      if(!pristineArmed.has(el)) return;
+      var trimmed = el.value.length < original.length && original.indexOf(el.value) === 0;
+      if(trimmed){
+        el.value = original;
+        goPrev();
+        return;
+      }
+      pristineArmed.delete(el);
+    });
+  }
+
+  function wireFieldChain(container){
+    var fields = getFocusableChain(container);
+    fields.forEach(function(el, i){
+      el.__prevField = i > 0 ? fields[i-1] : null;
+      wireBackspace(el);
+      snapshotField(el);
+    });
+  }
+
+  // ---------- Price field formatting: show "3.700" when not editing, plain digits while editing ----------
+  function parseNum(str){
+    if(str === undefined || str === null) return undefined;
+    var digits = String(str).replace(/[^\d]/g, "");
+    if(digits === "") return undefined;
+    return Number(digits);
+  }
+
+  function armPriceField(el){
+    if(el.__priceFmtWired) return;
+    el.__priceFmtWired = true;
+    el.addEventListener("input", function(){
+      var digits = el.value.replace(/[^\d]/g, "");
+      if(digits !== el.value) el.value = digits;
+    });
+    el.addEventListener("focus", function(){
+      var digits = el.value.replace(/[^\d]/g, "");
+      if(digits !== el.value) el.value = digits;
+    });
+    el.addEventListener("blur", function(){
+      var digits = el.value.replace(/[^\d]/g, "");
+      el.value = digits ? fmt(Number(digits)) : "";
+    });
+  }
+
+  // ---------- Tabs ----------
+  var tabsRow = document.getElementById("tabsRow");
+  var fabAdd = document.getElementById("fabAdd");
+
+  function renderTabs(){
+    tabsRow.innerHTML = "";
+    CAT_ORDER.forEach(function(key){
+      var cat = DATA.categories[key];
+      var pill = document.createElement("button");
+      pill.className = "tab-pill" + (state.activeCat === key ? " active" : "");
+      pill.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS[key]+'</svg><span>'+cat.label+'</span>';
+      pill.addEventListener("click", function(){
+        state.activeCat = key;
+        renderTabs();
+        renderCardList();
+      });
+      tabsRow.appendChild(pill);
+    });
+  }
+
+  // ---------- Card list ----------
+  var cardList = document.getElementById("cardList");
+
+  function renderCardList(){
+    var cat = DATA.categories[state.activeCat];
+    fabAdd.style.display = cat.allowAddSize ? "flex" : "none";
+
+    cardList.innerHTML = "";
+    if(cat.sizes.length === 0){
+      var empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "Nema unetih dimenzija još.";
+      cardList.appendChild(empty);
+      return;
+    }
+    getSortedSizes(cat).forEach(function(sz){
+      var p = cat.prices[sz] || {};
+      var hasOwn = typeof p.own === "number";
+      var card = document.createElement("div");
+      card.className = "price-card";
+
+      var tagsHtml = "";
+      if(p.pinned){
+        tagsHtml += ""; // pin shown separately near size, not as a tag
+      }
+      if(cat.hasMarket && typeof p.market === "number"){
+        tagsHtml += '<span class="pc-tag"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ICONS.market+'</svg>Tr. '+fmt(p.market)+'</span>';
+      }
+      if(cat.hasComplete && typeof p.complete === "number"){
+        tagsHtml += '<span class="pc-tag complete"><svg viewBox="0 0 16 16" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+ICONS.tire+'</svg>Pč. '+fmt(p.complete)+'</span>';
+      }
+
+      var pinBadge = p.pinned ? '<svg class="pin-badge" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>' : '';
+
+      card.innerHTML =
+        '<div class="pc-top">' +
+          '<div class="pc-left">' + pinBadge + '<span class="pc-size">'+sz+'</span>' + tagsHtml + '</div>' +
+          (hasOwn
+            ? '<div class="pc-price">'+fmt(p.own)+'<span class="din">din</span></div>'
+            : '<div class="pc-price empty">nema cenu</div>') +
+        '</div>' +
+        (p.note ? '<div class="pc-note">'+escapeHtml(p.note)+'</div>' : '');
+
+      wireCardInteraction(card,
+        function(){ openItemEdit(state.activeCat, sz); },
+        function(){ openCardQuickMenu(state.activeCat, sz); }
+      );
+      cardList.appendChild(card);
+    });
+  }
+
+  function escapeHtml(str){
+    var d = document.createElement("div");
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ---------- Tap vs long-press on a card ----------
+  function wireCardInteraction(card, onTap, onLongPress){
+    var timer = null;
+    var longPressFired = false;
+    var moved = false;
+    var startX = 0, startY = 0;
+
+    card.addEventListener("pointerdown", function(e){
+      longPressFired = false;
+      moved = false;
+      startX = e.clientX; startY = e.clientY;
+      timer = setTimeout(function(){
+        longPressFired = true;
+        if(navigator.vibrate) navigator.vibrate(15);
+        onLongPress();
+      }, 500);
+    });
+    card.addEventListener("pointermove", function(e){
+      if(Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10){
+        moved = true;
+        clearTimeout(timer);
+      }
+    });
+    card.addEventListener("pointerup", function(){
+      clearTimeout(timer);
+      if(!longPressFired && !moved){ onTap(); }
+    });
+    card.addEventListener("pointercancel", function(){ clearTimeout(timer); });
+    card.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+  }
+
+  // ---------- Card quick menu (long-press: pin / delete) ----------
+  var cardMenuOverlay = document.getElementById("cardMenuOverlay");
+  var cardMenuTitle = document.getElementById("cardMenuTitle");
+  var cardMenuPinBtn = document.getElementById("cardMenuPinBtn");
+  var cardMenuDeleteBtn = document.getElementById("cardMenuDeleteBtn");
+  var cardMenuCancelBtn = document.getElementById("cardMenuCancelBtn");
+  var menuCat = null, menuSize = null;
+
+  function openCardQuickMenu(catKey, sz){
+    menuCat = catKey; menuSize = sz;
+    var cat = DATA.categories[catKey];
+    var p = cat.prices[sz] || {};
+    cardMenuTitle.textContent = cat.label + " " + sz;
+    cardMenuPinBtn.textContent = p.pinned ? "Otkači sa vrha" : "Zakači na vrh";
+    cardMenuOverlay.classList.add("open");
+    pushOverlayState(function(){ cardMenuOverlay.classList.remove("open"); });
+  }
+  cardMenuCancelBtn.addEventListener("click", closeTopOverlay);
+  cardMenuPinBtn.addEventListener("click", function(){
+    var cat = DATA.categories[menuCat];
+    if(!cat.prices[menuSize]) cat.prices[menuSize] = {};
+    cat.prices[menuSize].pinned = !cat.prices[menuSize].pinned;
+    saveData();
+    closeTopOverlay();
+    renderCardList();
+    showToast(cat.prices[menuSize].pinned ? "Zakačeno na vrh" : "Otkačeno sa vrha");
+  });
+  cardMenuDeleteBtn.addEventListener("click", function(){
+    var catKey = menuCat, sz = menuSize;
+    askConfirm("Ukloniti veličinu "+sz+"?", "Ova dimenzija i njena cena biće trajno obrisane.", "Obriši", false).then(function(ok){
+      closeTopOverlay();
+      if(!ok) return;
+      var cat = DATA.categories[catKey];
+      cat.sizes = cat.sizes.filter(function(s){ return s !== sz; });
+      delete cat.prices[sz];
+      saveData();
+      renderCardList();
+      showToast("Veličina uklonjena");
+    });
+  });
+
+  // ---------- Item edit sheet ----------
+  var itemEditOverlay = document.getElementById("itemEditOverlay");
+  var itemEditTitle = document.getElementById("itemEditTitle");
+  var itemEditSub = document.getElementById("itemEditSub");
+  var itemOwnPrice = document.getElementById("itemOwnPrice");
+  var itemMarketBlock = document.getElementById("itemMarketBlock");
+  var itemMarketPrice = document.getElementById("itemMarketPrice");
+  var itemCompleteBlock = document.getElementById("itemCompleteBlock");
+  var itemCompletePrice = document.getElementById("itemCompletePrice");
+  var itemNote = document.getElementById("itemNote");
+  var itemDeleteBtn = document.getElementById("itemDeleteBtn");
+  var editingCat = null, editingSize = null;
+  [itemOwnPrice, itemMarketPrice, itemCompletePrice].forEach(armPriceField);
+
+  function openItemEdit(catKey, sz){
+    editingCat = catKey; editingSize = sz;
+    var cat = DATA.categories[catKey];
+    var p = cat.prices[sz] || {};
+    itemEditTitle.textContent = cat.label + " " + sz;
+    itemEditSub.textContent = "Izmeni cenu za ovu dimenziju";
+    itemOwnPrice.value = typeof p.own === "number" ? fmt(p.own) : "";
+    itemMarketBlock.style.display = cat.hasMarket ? "" : "none";
+    itemMarketPrice.value = typeof p.market === "number" ? fmt(p.market) : "";
+    itemCompleteBlock.style.display = cat.hasComplete ? "" : "none";
+    itemCompletePrice.value = typeof p.complete === "number" ? fmt(p.complete) : "";
+    itemNote.value = p.note || "";
+    itemDeleteBtn.style.display = cat.allowAddSize ? "" : "none";
+    itemEditOverlay.classList.add("open");
+    wireFieldChain(itemEditOverlay);
+    pushOverlayState(function(){ itemEditOverlay.classList.remove("open"); });
+  }
+  function closeItemEdit(){ itemEditOverlay.classList.remove("open"); }
+  document.getElementById("closeItemEdit").addEventListener("click", closeTopOverlay);
+  document.getElementById("itemCancelBtn").addEventListener("click", closeTopOverlay);
+
+  document.getElementById("itemSaveBtn").addEventListener("click", function(){
+    var cat = DATA.categories[editingCat];
+    var ownVal = parseNum(itemOwnPrice.value);
+    if(ownVal === undefined || isNaN(ownVal)){
+      showToast("Unesi cenu");
+      return;
+    }
+    var entry = { own: ownVal };
+    if(cat.hasMarket){
+      var mVal = parseNum(itemMarketPrice.value);
+      if(mVal !== undefined && !isNaN(mVal)) entry.market = mVal;
+    }
+    if(cat.hasComplete){
+      var cVal = parseNum(itemCompletePrice.value);
+      if(cVal !== undefined && !isNaN(cVal)) entry.complete = cVal;
+    }
+    var noteVal = itemNote.value.trim();
+    if(noteVal) entry.note = noteVal;
+    cat.prices[editingSize] = entry;
+    saveData();
+    closeTopOverlay();
+    renderCardList();
+    showToast("Sačuvano");
+  });
+
+  itemDeleteBtn.addEventListener("click", function(){
+    askConfirm("Ukloniti veličinu "+editingSize+"?", "Ova dimenzija i njena cena biće trajno obrisane.", "Obriši", false).then(function(ok){
+      if(!ok) return;
+      var cat = DATA.categories[editingCat];
+      cat.sizes = cat.sizes.filter(function(s){ return s !== editingSize; });
+      delete cat.prices[editingSize];
+      saveData();
+      closeTopOverlay();
+      renderCardList();
+      showToast("Veličina uklonjena");
+    });
+  });
+
+  // ---------- Add size sheet ----------
+  var addSizeOverlay = document.getElementById("addSizeOverlay");
+  var addSizeTitle = document.getElementById("addSizeTitle");
+  var newSizeLabel = document.getElementById("newSizeLabel");
+  var newSizePrice = document.getElementById("newSizePrice");
+  var newSizeNote = document.getElementById("newSizeNote");
+  armPriceField(newSizePrice);
+
+  fabAdd.addEventListener("click", function(){
+    var cat = DATA.categories[state.activeCat];
+    addSizeTitle.textContent = "Nova veličina — " + cat.label;
+    newSizeLabel.value = "";
+    newSizePrice.value = "";
+    newSizeNote.value = "";
+    addSizeOverlay.classList.add("open");
+    wireFieldChain(addSizeOverlay);
+    pushOverlayState(function(){ addSizeOverlay.classList.remove("open"); });
+  });
+  function closeAddSize(){ addSizeOverlay.classList.remove("open"); }
+  document.getElementById("closeAddSize").addEventListener("click", closeTopOverlay);
+  document.getElementById("addSizeCancelBtn").addEventListener("click", closeTopOverlay);
+
+  document.getElementById("addSizeSaveBtn").addEventListener("click", function(){
+    var cat = DATA.categories[state.activeCat];
+    var label = newSizeLabel.value.trim();
+    if(!label){ showToast("Unesi veličinu"); return; }
+    if(cat.sizes.indexOf(label) !== -1){ showToast("Ta veličina već postoji"); return; }
+    var priceVal = parseNum(newSizePrice.value);
+    if(priceVal === undefined || isNaN(priceVal)){ showToast("Unesi cenu"); return; }
+    var entry = { own: priceVal };
+    var noteVal = newSizeNote.value.trim();
+    if(noteVal) entry.note = noteVal;
+    cat.sizes.push(label);
+    cat.prices[label] = entry;
+    saveData();
+    closeTopOverlay();
+    renderCardList();
+    showToast("Veličina dodata");
+  });
+
+  // ---------- Settings modal (bulk edit) ----------
+  var settingsOverlay = document.getElementById("settingsOverlay");
+  var priceEditArea = document.getElementById("priceEditArea");
+  var reminderDaysInput = document.getElementById("reminderDaysInput");
+  var lastBackupNote = document.getElementById("lastBackupNote");
+
+  function fieldId(catKey, sz, type){
+    return "f_"+catKey+"_"+encodeURIComponent(sz)+"_"+type;
+  }
+
+  function renderPriceEditArea(){
+    priceEditArea.innerHTML = "";
+    CAT_ORDER.forEach(function(catKey){
+      var cat = DATA.categories[catKey];
+      var block = document.createElement("div");
+      block.className = "cat-edit-block";
+      var rowsHtml = "";
+      cat.sizes.forEach(function(sz){
+        var p = cat.prices[sz] || {};
+        rowsHtml += '<div class="price-row">' +
+          '<div class="pr-size">'+sz+'</div>' +
+          '<div class="pr-inputs">' +
+            '<div class="pr-field"><label>Ukupno</label><input type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="'+fieldId(catKey,sz,'own')+'" value="'+(typeof p.own==="number"?fmt(p.own):"")+'" placeholder="—"></div>' +
+            (cat.hasMarket ? '<div class="pr-field market"><label>Tr.</label><input type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="'+fieldId(catKey,sz,'market')+'" value="'+(typeof p.market==="number"?fmt(p.market):"")+'" placeholder="—"></div>' : '') +
+            (cat.hasComplete ? '<div class="pr-field complete"><label>Pč.</label><input type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="'+fieldId(catKey,sz,'complete')+'" value="'+(typeof p.complete==="number"?fmt(p.complete):"")+'" placeholder="—"></div>' : '') +
+          '</div>' +
+          (cat.allowAddSize ? '<button class="remove-size-btn" data-remove="'+catKey+'|'+sz+'"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>' : '') +
+        '</div>';
+      });
+      block.innerHTML = '<div class="cat-edit-name">'+cat.label+'</div>' + rowsHtml;
+      priceEditArea.appendChild(block);
+    });
+
+    priceEditArea.querySelectorAll(".pr-field input").forEach(armPriceField);
+    wireFieldChain(priceEditArea);
+
+    priceEditArea.querySelectorAll("[data-remove]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var parts = btn.getAttribute("data-remove").split("|");
+        var catKey = parts[0], sz = parts[1];
+        askConfirm("Ukloniti veličinu "+sz+"?", "Cena za ovu veličinu će biti obrisana iz cenovnika.", "Ukloni", false).then(function(ok){
+          if(!ok) return;
+          var cat = DATA.categories[catKey];
+          cat.sizes = cat.sizes.filter(function(s){ return s !== sz; });
+          delete cat.prices[sz];
+          saveData();
+          renderPriceEditArea();
+          showToast("Veličina uklonjena");
+        });
+      });
+    });
+  }
+
+  function collectPriceEdits(){
+    CAT_ORDER.forEach(function(catKey){
+      var cat = DATA.categories[catKey];
+      cat.sizes.forEach(function(sz){
+        if(!cat.prices[sz]) cat.prices[sz] = {};
+        var ownEl = document.getElementById(fieldId(catKey,sz,'own'));
+        var ownVal = parseNum(ownEl && ownEl.value);
+        if(ownVal !== undefined && !isNaN(ownVal)) cat.prices[sz].own = ownVal;
+        else delete cat.prices[sz].own;
+
+        if(cat.hasMarket){
+          var mEl = document.getElementById(fieldId(catKey,sz,'market'));
+          var mVal = parseNum(mEl && mEl.value);
+          if(mVal !== undefined && !isNaN(mVal)) cat.prices[sz].market = mVal;
+          else delete cat.prices[sz].market;
+        }
+        if(cat.hasComplete){
+          var cEl = document.getElementById(fieldId(catKey,sz,'complete'));
+          var cVal = parseNum(cEl && cEl.value);
+          if(cVal !== undefined && !isNaN(cVal)) cat.prices[sz].complete = cVal;
+          else delete cat.prices[sz].complete;
+        }
+      });
+    });
+  }
+
+  function refreshLastBackupNote(){
+    if(!DATA.lastBackup){
+      lastBackupNote.textContent = "Još uvek nisi napravio bekap.";
+      return;
+    }
+    var d = new Date(DATA.lastBackup);
+    lastBackupNote.textContent = "Poslednji bekap: " + d.toLocaleDateString("sr-RS") + " u " + d.toLocaleTimeString("sr-RS", {hour:'2-digit', minute:'2-digit'});
+  }
+
+  function openSettingsModal(){
+    settingsOverlay.classList.add("open");
+    renderPriceEditArea();
+    reminderDaysInput.value = DATA.reminderDays;
+    refreshLastBackupNote();
+    setSettingsTab("prices");
+    pushOverlayState(function(){ settingsOverlay.classList.remove("open"); });
+  }
+  function closeSettingsModal(){ settingsOverlay.classList.remove("open"); }
+
+  var settingsTabPrices = document.getElementById("settingsTabPrices");
+  var settingsTabBackup = document.getElementById("settingsTabBackup");
+  var settingsPricesSection = document.getElementById("settingsPricesSection");
+  var settingsBackupSection = document.getElementById("settingsBackupSection");
+
+  function setSettingsTab(tab){
+    var isPrices = tab === "prices";
+    settingsTabPrices.classList.toggle("active", isPrices);
+    settingsTabBackup.classList.toggle("active", !isPrices);
+    settingsPricesSection.style.display = isPrices ? "" : "none";
+    settingsBackupSection.style.display = isPrices ? "none" : "";
+  }
+  settingsTabPrices.addEventListener("click", function(){ setSettingsTab("prices"); });
+  settingsTabBackup.addEventListener("click", function(){ setSettingsTab("backup"); });
+
+  document.getElementById("openSettings").addEventListener("click", function(){ openSettingsModal(); });
+  document.getElementById("closeSettings").addEventListener("click", closeTopOverlay);
+  document.getElementById("saveSettingsBtn").addEventListener("click", function(){
+    collectPriceEdits();
+    var rd = Number(reminderDaysInput.value);
+    if(!isNaN(rd) && rd > 0) DATA.reminderDays = rd;
+    saveData();
+    closeTopOverlay();
+    renderCardList();
+    checkBackupBanner();
+    showToast("Sačuvano");
+  });
+
+  // ---------- Export / Import ----------
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    var payload = JSON.stringify(DATA, null, 2);
+    var blob = new Blob([payload], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = "cenovnik-usluga-bekap-"+stamp+".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    DATA.lastBackup = Date.now();
+    saveData();
+    refreshLastBackupNote();
+    checkBackupBanner();
+    showToast("Bekap izvezen");
+  });
+
+  var importFile = document.getElementById("importFile");
+  document.getElementById("importBtn").addEventListener("click", function(){ importFile.click(); });
+  importFile.addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){
+      askConfirm("Uvesti bekap?", "Ovo će zameniti sve trenutne cene podacima iz fajla.", "Uvezi", true).then(function(ok){
+        if(!ok){ importFile.value = ""; return; }
+        try{
+          var parsed = JSON.parse(evt.target.result);
+          if(!parsed.categories) throw new Error("bad format");
+          DATA = parsed;
+          DATA = loadDataFromObject(DATA);
+          saveData();
+          renderPriceEditArea();
+          renderTabs();
+          renderCardList();
+          reminderDaysInput.value = DATA.reminderDays;
+          refreshLastBackupNote();
+          checkBackupBanner();
+          showToast("Bekap uvezen");
+        }catch(err){
+          showToast("Fajl nije validan bekap");
+        }
+        importFile.value = "";
+      });
+    };
+    reader.readAsText(file);
+  });
+
+  function loadDataFromObject(obj){
+    // reuse same normalization as loadData(), but from an in-memory object instead of localStorage
+    var tmpKey = STORAGE_KEY + "_tmp_import";
+    localStorage.setItem(tmpKey, JSON.stringify(obj));
+    var backupRaw = localStorage.getItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    var normalized = loadData();
+    localStorage.removeItem(tmpKey);
+    if(backupRaw !== null) localStorage.setItem(STORAGE_KEY, backupRaw);
+    return normalized;
+  }
+
+  // ---------- Backup reminder banner ----------
+  var backupBanner = document.getElementById("backupBanner");
+  var backupBannerText = document.getElementById("backupBannerText");
+  document.getElementById("backupBannerBtn").addEventListener("click", function(){
+    document.getElementById("exportBtn").click();
+  });
+  function checkBackupBanner(){
+    var days = DATA.reminderDays || 7;
+    if(!DATA.lastBackup){
+      backupBannerText.textContent = "Još nemaš bekap podataka — napravi ga sada.";
+      backupBanner.style.display = "flex";
+      return;
+    }
+    var diffDays = (Date.now() - DATA.lastBackup) / (1000*60*60*24);
+    if(diffDays >= days){
+      backupBannerText.textContent = "Prošlo je "+Math.floor(diffDays)+" dana od poslednjeg bekapa.";
+      backupBanner.style.display = "flex";
+    } else {
+      backupBanner.style.display = "none";
+    }
+  }
+
+  // ---------- QR code for payment ----------
+  var openQrBtn = document.getElementById("openQr");
+  var qrViewOverlay = document.getElementById("qrViewOverlay");
+  var qrViewImg = document.getElementById("qrViewImg");
+  var qrFileInput = document.getElementById("qrFileInput");
+  var qrChangeBtn = document.getElementById("qrChangeBtn");
+  var qrRemoveBtn = document.getElementById("qrRemoveBtn");
+
+  function showQrViewer(){
+    qrViewImg.src = DATA.qrCodeImage;
+    if(!qrViewOverlay.classList.contains("open")){
+      qrViewOverlay.classList.add("open");
+      pushOverlayState(function(){ qrViewOverlay.classList.remove("open"); });
+    }
+  }
+  function closeQrViewer(){ qrViewOverlay.classList.remove("open"); }
+
+  openQrBtn.addEventListener("click", function(){
+    if(DATA.qrCodeImage){ showQrViewer(); }
+    else { qrFileInput.click(); }
+  });
+  document.getElementById("closeQrView").addEventListener("click", closeTopOverlay);
+  qrChangeBtn.addEventListener("click", function(){ qrFileInput.click(); });
+  qrRemoveBtn.addEventListener("click", function(){
+    askConfirm("Ukloniti QR kod?", "Moraćeš ponovo da dodaš sliku kad ti zatreba.", "Ukloni", false).then(function(ok){
+      if(!ok) return;
+      delete DATA.qrCodeImage;
+      saveData();
+      closeTopOverlay();
+      showToast("QR kod uklonjen");
+    });
+  });
+  qrFileInput.addEventListener("change", function(e){
+    var file = e.target.files[0];
+    qrFileInput.value = "";
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt){
+      var previous = DATA.qrCodeImage;
+      DATA.qrCodeImage = evt.target.result;
+      if(saveData()){
+        showQrViewer();
+        showToast("QR kod sačuvan");
+      } else {
+        DATA.qrCodeImage = previous;
+        showToast("Slika je prevelika za čuvanje — probaj manju sliku");
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ---------- Init ----------
+  renderTabs();
+  renderCardList();
+  checkBackupBanner();
+
+  // ---------- PWA: register service worker ----------
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(){});
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
