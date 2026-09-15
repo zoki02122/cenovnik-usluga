@@ -62,19 +62,22 @@
 
   .tabs-row{
     display:flex; gap:8px; padding:0 16px 14px;
-    overflow-x:auto;
   }
   .tab-pill{
-    display:flex; align-items:center; gap:7px;
-    padding:9px 15px;
+    flex:1 1 0;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:9px 6px;
     border-radius:22px;
     background:var(--bg-elev-2);
     border:1px solid var(--border);
     color:var(--text-dim);
-    font-size:14.5px; font-weight:600;
-    flex-shrink:0;
+    font-size:13.5px; font-weight:600;
     white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    min-width:0;
   }
+  .tab-pill span{overflow:hidden; text-overflow:ellipsis;}
   .tab-pill svg{width:16px;height:16px; stroke:var(--text-dim); flex-shrink:0;}
   .tab-pill.active{
     background:var(--pill-active-bg);
@@ -497,7 +500,7 @@
   var DEFAULT_DATA = {
     categories: {
       putnicka: {
-        label: "Putnička vozila",
+        label: "Putnička",
         sizes: ["10-13\"","14-15\"","16\"","17\"","18\"","19\"","20\">"],
         allowAddSize: true,
         hasMarket: true,
@@ -513,7 +516,7 @@
         }
       },
       dzip: {
-        label: "Džip 4x4 vozila",
+        label: "Džip 4x4",
         sizes: ["15\"","16\"","17\"","18\"","19\"","20\"","21\""],
         allowAddSize: true,
         hasMarket: true,
@@ -524,7 +527,7 @@
         }
       },
       kombi: {
-        label: "Kombi i poluteretna",
+        label: "Kombi",
         sizes: ["14-15\"","16\">"],
         allowAddSize: true,
         hasMarket: true,
@@ -557,6 +560,7 @@
       data.categories[k].hasMarket = DEFAULT_DATA.categories[k].hasMarket;
       data.categories[k].hasComplete = DEFAULT_DATA.categories[k].hasComplete;
       data.categories[k].allowAddSize = DEFAULT_DATA.categories[k].allowAddSize;
+      data.categories[k].label = DEFAULT_DATA.categories[k].label;
       if(!data.categories[k].prices) data.categories[k].prices = {};
     });
     // migrate old Džip sizes stored without the inch mark (e.g. "15") to the "15\"" format,
