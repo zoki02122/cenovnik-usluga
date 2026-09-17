@@ -692,15 +692,32 @@
       return;
     }
     exitTrapArmed = false;
-    askConfirm("🚪 Izlazak iz aplikacije", "Da li sigurno želite da izađete?", "🚪 Izađi", false, "↩️ Ostani").then(function(yes){
-      if(yes){
-        exitConfirmed = true;
-        history.back();
-      } else {
-        armExitTrap();
-      }
-    });
+    showExitConfirm();
   });
+
+  function showExitConfirm(){
+    var b = document.createElement("div");
+    b.className = "confirm-overlay open";
+    b.id = "exitOverlay";
+    b.innerHTML = '<div class="confirm-box">'+
+      '<div style="font-size:52px; line-height:1; margin-bottom:8px;">🚪</div>'+
+      '<div class="ct">Izlazak iz aplikacije</div>'+
+      '<div class="cm">Da li sigurno želite da izađete?</div>'+
+      '<div class="confirm-actions">'+
+      '<button class="confirm-cancel" id="exitStayBtn">↩️ Ostani</button>'+
+      '<button class="confirm-ok" id="exitLeaveBtn">🚪 Izađi</button>'+
+      '</div></div>';
+    document.body.appendChild(b);
+    document.getElementById("exitStayBtn").onclick = function(){
+      b.remove();
+      armExitTrap();
+    };
+    document.getElementById("exitLeaveBtn").onclick = function(){
+      b.remove();
+      exitConfirmed = true;
+      history.back();
+    };
+  }
 
   // ---------- Confirm dialog ----------
   var confirmOverlay = document.getElementById("confirmOverlay");
