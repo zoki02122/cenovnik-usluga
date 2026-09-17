@@ -661,15 +661,45 @@
     hideFn();
   }
 
+  var exitTrapArmed = false;
+  var exitConfirmed = false;
+  function armExitTrap(){
+    if(!exitTrapArmed){
+      history.pushState({ exitTrap:true }, "");
+      exitTrapArmed = true;
+    }
+  }
+  document.addEventListener("pointerdown", function onceP(){
+    armExitTrap();
+    document.removeEventListener("pointerdown", onceP);
+  }, {once:true});
+  document.addEventListener("keydown", function onceK(){
+    armExitTrap();
+    document.removeEventListener("keydown", onceK);
+  }, {once:true});
+
   window.addEventListener("popstate", function(){
     if(suppressPopstate > 0){
       suppressPopstate--;
       return;
     }
+    if(exitConfirmed){
+      return;
+    }
     if(overlayStack.length > 0){
       var hideFn = overlayStack.pop();
       hideFn();
+      return;
     }
+    exitTrapArmed = false;
+    askConfirm("🚪 Izlazak iz aplikacije", "Da li sigurno želite da izađete?", "🚪 Izađi", false, "↩️ Ostani").then(function(yes){
+      if(yes){
+        exitConfirmed = true;
+        history.back();
+      } else {
+        armExitTrap();
+      }
+    });
   });
 
   // ---------- Confirm dialog ----------
@@ -680,11 +710,12 @@
   var confirmCancelBtn = document.getElementById("confirmCancel");
   var confirmResolve = null;
 
-  function askConfirm(title, msg, okLabel, positive){
+  function askConfirm(title, msg, okLabel, positive, cancelLabel){
     confirmTitle.textContent = title;
     confirmMsg.textContent = msg;
     confirmOkBtn.textContent = okLabel || "Potvrdi";
     confirmOkBtn.className = "confirm-ok" + (positive ? " pos" : "");
+    confirmCancelBtn.textContent = cancelLabel || "Otkaži";
     confirmOverlay.classList.add("open");
     pushOverlayState(function(){
       confirmOverlay.classList.remove("open");
