@@ -699,13 +699,13 @@
     var b = document.createElement("div");
     b.className = "confirm-overlay open";
     b.id = "exitOverlay";
-    b.innerHTML = '<div class="confirm-box">'+
-      '<div style="font-size:52px; line-height:1; margin-bottom:8px;">🚪</div>'+
+    b.innerHTML = '<div class="confirm-box" style="position:fixed; top:42%; left:50%; transform:translate(-50%,-50%); margin:0;">'+
+      '<div style="font-size:128px; line-height:1; margin-bottom:10px;">🚪</div>'+
       '<div class="ct">Izlazak iz aplikacije</div>'+
       '<div class="cm">Da li sigurno želite da izađete?</div>'+
       '<div class="confirm-actions">'+
-      '<button class="confirm-cancel" id="exitStayBtn">↩️ Ostani</button>'+
-      '<button class="confirm-ok" id="exitLeaveBtn">🚪 Izađi</button>'+
+      '<button class="confirm-cancel" id="exitStayBtn"><span style="font-size:44px; vertical-align:-14px; margin-right:6px;">↩️</span>Ostani</button>'+
+      '<button class="confirm-ok" id="exitLeaveBtn"><span style="font-size:44px; vertical-align:-14px; margin-right:6px;">🚪</span>Izađi</button>'+
       '</div></div>';
     document.body.appendChild(b);
     document.getElementById("exitStayBtn").onclick = function(){
