@@ -371,7 +371,7 @@
 
     <div class="field-block">
       <label class="field-label">Veličina (npr. 17")</label>
-      <input class="field-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="newSizeLabel" placeholder="17&quot;">
+      <input class="field-input" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" id="newSizeLabel" placeholder="17&quot;">
     </div>
     <div class="field-block">
       <label class="field-label">Cena za ukupnu montažu (din)</label>
@@ -1097,6 +1097,26 @@
   var newSizePrice = document.getElementById("newSizePrice");
   var newSizeNote = document.getElementById("newSizeNote");
   armPriceField(newSizePrice);
+
+  // Auto-append the inch mark (") as the user types digits, so they only need to type the number.
+  // Stays permissive: if the size needs a range ("10-13") or "and up" (">"), those characters
+  // still pass through untouched — we only add the closing " when what's typed is plain digits/hyphens
+  // and nothing has already supplied a closing mark.
+  newSizeLabel.addEventListener("input", function(){
+    var v = newSizeLabel.value;
+    var core = v.replace(/["″]+$/, "").replace(/>+$/, "");
+    if(core === ""){
+      if(v !== "") newSizeLabel.value = "";
+      return;
+    }
+    if(/^[0-9-]+$/.test(core) && !/["″>]$/.test(v)){
+      var newVal = core + "\"";
+      if(newVal !== v){
+        newSizeLabel.value = newVal;
+        newSizeLabel.setSelectionRange(core.length, core.length);
+      }
+    }
+  });
 
   fabAdd.addEventListener("click", function(){
     var cat = DATA.categories[state.activeCat];
