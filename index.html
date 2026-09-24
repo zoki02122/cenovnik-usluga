@@ -843,6 +843,33 @@
     });
   }
 
+  // ---------- Forward navigation ("dalje" key) for bulk edit only ----------
+  // Enter/Next moves to the next field in DOM order (Ukupno -> Tr. -> Pč. -> next row -> next category).
+  // On the very last field, Enter triggers onLast (Sačuvaj izmene).
+  function wireForwardChain(container, onLast){
+    var fields = getFocusableChain(container);
+    fields.forEach(function(el, i){
+      var isLast = i === fields.length - 1;
+      el.__nextField = isLast ? null : fields[i+1];
+      el.setAttribute("enterkeyhint", isLast ? "done" : "next");
+      if(el.__forwardWired) return;
+      el.__forwardWired = true;
+      el.addEventListener("keydown", function(e){
+        if(e.key !== "Enter" && e.keyCode !== 13) return;
+        e.preventDefault();
+        var next = el.__nextField;
+        if(next){
+          next.focus();
+          next.scrollIntoView({block:"center"});
+        } else if(typeof el.__onLast === "function"){
+          el.blur();
+          el.__onLast();
+        }
+      });
+    });
+    if(fields.length) fields[fields.length-1].__onLast = onLast;
+  }
+
   // ---------- Price field formatting: show "3.700" when not editing, plain digits while editing ----------
   function parseNum(str){
     if(str === undefined || str === null) return undefined;
@@ -1185,6 +1212,7 @@
 
     priceEditArea.querySelectorAll(".pr-field input").forEach(armPriceField);
     wireFieldChain(priceEditArea);
+    wireForwardChain(priceEditArea, function(){ document.getElementById("saveSettingsBtn").click(); });
 
     priceEditArea.querySelectorAll("[data-remove]").forEach(function(btn){
       btn.addEventListener("click", function(){
