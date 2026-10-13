@@ -1,6 +1,6 @@
 // Cenovnik usluga — service worker
 // Network-first: uvek pokušaj sveže sa interneta, keš je samo rezerva za offline rad.
-const CACHE_NAME = "cenovnik-usluga-cache-v1";
+const CACHE_NAME = "cenovnik-usluga-cache-v2";
 const CORE_ASSETS = [
   "./",
   "./index.html",

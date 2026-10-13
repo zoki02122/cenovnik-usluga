@@ -587,6 +587,7 @@ html[data-theme="koza"]{
 :is([data-theme="banka"],[data-theme="ponoc"],[data-theme="ponoc-srebro"],[data-theme="koza"]) .tab-pill.active{background:var(--tab-on-bg); border-color:var(--tab-on-line); color:var(--tab-on-text); box-shadow:var(--tab-on-shine); font-weight:600;}
 :is([data-theme="banka"],[data-theme="ponoc"],[data-theme="ponoc-srebro"],[data-theme="koza"]) :is(.btn-save,.save-settings-btn,.confirm-ok.pos){background:var(--act-bg); color:var(--on-act); border:1px solid var(--act-line); box-shadow:var(--act-shine);}
 :is([data-theme="banka"],[data-theme="ponoc"],[data-theme="ponoc-srebro"],[data-theme="koza"]) :is(.field-input,.pr-field input,.reminder-row input):focus{outline:none; border-color:var(--focus-line);}
+  .app-version{text-align:center;color:var(--text-dim);font-size:13px;margin:22px 0 6px;}
 </style>
 </head>
 <body>
@@ -645,7 +646,7 @@ html[data-theme="koza"]{
     </div>
     <div class="field-block">
       <label class="field-label">Napomena — opciono</label>
-      <textarea class="field-input" id="itemNote" placeholder="npr. runflat +500 din"></textarea>
+      <textarea class="field-input" id="itemNote" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="npr. runflat +500 din"></textarea>
     </div>
 
     <div class="sheet-actions">
@@ -676,7 +677,7 @@ html[data-theme="koza"]{
     </div>
     <div class="field-block">
       <label class="field-label">Napomena — opciono</label>
-      <textarea class="field-input" id="newSizeNote" placeholder="opciono"></textarea>
+      <textarea class="field-input" id="newSizeNote" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="opciono"></textarea>
     </div>
 
     <div class="sheet-actions">
@@ -794,6 +795,7 @@ html[data-theme="koza"]{
     reminderDays: 7
   };
 
+  var APP_VERSION = 2; /* svaka objava: +1, isti broj u sw.js (CACHE_NAME) i u linku ?v=N */
   var CAT_ORDER = ["putnicka","dzip","kombi"];
 
   function loadData(){
@@ -1526,7 +1528,8 @@ html[data-theme="koza"]{
       tileHtml("theme", "🎨", "Tema", findTheme(getTheme()).name) +
       tileHtml("prices", "💰", "Cene", catNames) +
       tileHtml("backup", "💾", "Rezervna kopija", DATA.lastBackup ? "Poslednja: " + fmtDateShort(DATA.lastBackup) : "Još nije napravljena") +
-      tileHtml("reminder", "⏰", "Podsetnik za bekap", n === 1 ? "Svaki dan" : "Na svakih " + n + " " + daniRec(n)));
+      tileHtml("reminder", "⏰", "Podsetnik za bekap", n === 1 ? "Svaki dan" : "Na svakih " + n + " " + daniRec(n)) +
+      '<div class="app-version">verzija '+APP_VERSION+'</div>');
     if(!body) return;
     body.querySelectorAll("[data-tile]").forEach(function(btn){
       btn.addEventListener("click", function(){ openSettingsSub(btn.getAttribute("data-tile")); });
